@@ -68,3 +68,9 @@ manifest.mf
 nbbuild.xml
 nbproject
 .vscode
+
+# Local
+.cache
+.clangd
+.pio
+compile_commands.json
