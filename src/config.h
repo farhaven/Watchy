@@ -13,6 +13,8 @@
 //Change to your board version
 #define ARDUINO_WATCHY_V20
 
+#endif
+
 #define MENU_BTN_PIN 26
 #define BACK_BTN_PIN 25
 #define DOWN_BTN_PIN 4
@@ -47,8 +49,6 @@
 #define DOWN_BTN_MASK GPIO_SEL_4
 #define ACC_INT_MASK  GPIO_SEL_14
 #define BTN_PIN_MASK  MENU_BTN_MASK|BACK_BTN_MASK|UP_BTN_MASK|DOWN_BTN_MASK
-
-#endif
 
 //display
 #define DISPLAY_WIDTH 200
