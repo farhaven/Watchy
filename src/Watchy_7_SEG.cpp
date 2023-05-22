@@ -64,6 +64,7 @@ void Watchy7SEG::drawDate() {
 	display.setCursor(5, 150);
 	display.println(tmYearToCalendar(currentTime.Year)); // offset from 1970, since year is stored in uint8_t
 }
+
 void Watchy7SEG::drawSteps() {
 	// reset step counter at midnight
 	if (currentTime.Hour == 0 && currentTime.Minute == 0) {
@@ -74,6 +75,7 @@ void Watchy7SEG::drawSteps() {
 	display.setCursor(35, 190);
 	display.println(stepCount);
 }
+
 void Watchy7SEG::drawBattery() {
 	display.drawBitmap(154, 73, battery, 37, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
 	display.fillRect(159, 78, 27, BATTERY_SEGMENT_HEIGHT, DARKMODE ? GxEPD_BLACK : GxEPD_WHITE); // clear battery segments
