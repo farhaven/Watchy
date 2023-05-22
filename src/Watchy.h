@@ -61,6 +61,7 @@ class Watchy {
 	void showBuzz();
 	void showAccelerometer();
 	void showSyncNTP();
+	void showTextEntry();
 	bool syncNTP();
 	bool syncNTP(long gmt);
 	bool syncNTP(long gmt, String ntpServer);
