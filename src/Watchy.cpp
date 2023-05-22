@@ -285,7 +285,15 @@ void Watchy::showFastMenu(byte menuIndex) {
   int16_t yPos;
 
   const char *menuItems[] = {
-	  "About Watchy", "Vibrate Motor", "Show Accelerometer", "Set Time", "Setup WiFi", "Update Firmware", "Sync NTP"};
+	  "About Watchy",
+	  "Vibrate Motor",
+	  "Show Accelerometer",
+	  "Set Time",
+	  "Setup WiFi",
+	  "Update Firmware",
+	  "Sync NTP",
+  };
+
   for (int i = 0; i < MENU_LENGTH; i++) {
 	yPos = MENU_HEIGHT + (MENU_HEIGHT * i);
 	display.setCursor(0, yPos);
@@ -629,44 +637,54 @@ weatherData Watchy::getWeatherData(String cityID, String units, String lang, Str
   if (weatherIntervalCounter < 0) { //-1 on first run, set to updateInterval
 	weatherIntervalCounter = updateInterval;
   }
-  if (weatherIntervalCounter >= updateInterval) { // only update if WEATHER_UPDATE_INTERVAL has elapsed
-	                                              // i.e. 30 minutes
-	if (connectWiFi()) {
-	  HTTPClient http;              // Use Weather API for live data if WiFi is connected
-	  http.setConnectTimeout(3000); // 3 second max timeout
-	  String weatherQueryURL = url + cityID + String("&units=") + units + String("&lang=") + lang + String("&appid=") + apiKey;
-	  http.begin(weatherQueryURL.c_str());
-	  int httpResponseCode = http.GET();
-	  if (httpResponseCode == 200) {
-		String payload = http.getString();
-		JSONVar responseObject = JSON.parse(payload);
-		currentWeather.temperature = int(responseObject["main"]["temp"]);
-		currentWeather.weatherConditionCode = int(responseObject["weather"][0]["id"]);
-		currentWeather.weatherDescription = JSONVar::stringify(responseObject["weather"][0]["main"]);
-		currentWeather.external = true;
-		// sync NTP during weather API call and use timezone of city
-		gmtOffset = int(responseObject["timezone"]);
-		syncNTP(gmtOffset);
-	  } else {
-		// http error
-	  }
-	  http.end();
-	  // turn off radios
-	  WiFi.mode(WIFI_OFF);
-	  btStop();
-	} else {                                          // No WiFi, use internal temperature sensor
-	  uint8_t temperature = sensor.readTemperature(); // celsius
-	  if (!currentWeather.isMetric) {
-		temperature = temperature * 9. / 5. + 32.; // fahrenheit
-	  }
-	  currentWeather.temperature = temperature;
-	  currentWeather.weatherConditionCode = 800;
-	  currentWeather.external = false;
-	}
-	weatherIntervalCounter = 0;
-  } else {
+
+  if (weatherIntervalCounter < updateInterval) {
+	// only update if WEATHER_UPDATE_INTERVAL has elapsed
+	// i.e. 30 minutes
 	weatherIntervalCounter++;
+	return currentWeather;
   }
+
+  weatherIntervalCounter = 0;
+
+  if (!connectWiFi()) {
+	// No WiFi, use internal temperature sensor
+	uint8_t temperature = sensor.readTemperature(); // celsius
+	if (!currentWeather.isMetric) {
+	  temperature = temperature * 9. / 5. + 32.; // fahrenheit
+	}
+
+	currentWeather.temperature = temperature;
+	currentWeather.weatherConditionCode = 800;
+	currentWeather.external = false;
+
+	return currentWeather;
+  }
+
+  HTTPClient http;              // Use Weather API for live data if WiFi is connected
+  http.setConnectTimeout(3000); // 3 second max timeout
+  String weatherQueryURL = url + cityID + String("&units=") + units + String("&lang=") + lang + String("&appid=") + apiKey;
+  http.begin(weatherQueryURL.c_str());
+  int httpResponseCode = http.GET();
+  if (httpResponseCode == 200) {
+	String payload = http.getString();
+	JSONVar responseObject = JSON.parse(payload);
+	currentWeather.temperature = int(responseObject["main"]["temp"]);
+	currentWeather.weatherConditionCode = int(responseObject["weather"][0]["id"]);
+	currentWeather.weatherDescription = JSONVar::stringify(responseObject["weather"][0]["main"]);
+	currentWeather.external = true;
+	// sync NTP during weather API call and use timezone of city
+	gmtOffset = int(responseObject["timezone"]);
+	syncNTP(gmtOffset);
+  } else {
+	// http error
+  }
+  http.end();
+
+  // turn off radios
+  WiFi.mode(WIFI_OFF);
+  btStop();
+
   return currentWeather;
 }
 
