@@ -13,7 +13,6 @@
 #include "DSEG7_Classic_Bold_53.h"
 #include "Display.h"
 #include "WatchyRTC.h"
-#include "BLE.h"
 #include "bma.h"
 #include "config.h"
 
@@ -61,7 +60,6 @@ public:
   void showAbout();
   void showBuzz();
   void showAccelerometer();
-  void showUpdateFW();
   void showSyncNTP();
   bool syncNTP();
   bool syncNTP(long gmt);
@@ -72,7 +70,6 @@ public:
   weatherData getWeatherData();
   weatherData getWeatherData(String cityID, String units, String lang,
                              String url, String apiKey, uint8_t updateInterval);
-  void updateFWBegin();
 
   void showWatchFace(bool partialRefresh);
   virtual void drawWatchFace(); // override this method for different watch
@@ -91,6 +88,5 @@ extern RTC_DATA_ATTR int guiState;
 extern RTC_DATA_ATTR int menuIndex;
 extern RTC_DATA_ATTR BMA423 sensor;
 extern RTC_DATA_ATTR bool WIFI_CONFIGURED;
-extern RTC_DATA_ATTR bool BLE_CONFIGURED;
 
 #endif

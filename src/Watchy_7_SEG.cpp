@@ -17,9 +17,6 @@ void Watchy7SEG::drawWatchFace() {
   drawWeather();
   drawBattery();
   display.drawBitmap(120, 77, WIFI_CONFIGURED ? wifi : wifioff, 26, 18, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
-  if (BLE_CONFIGURED) {
-    display.drawBitmap(100, 75, bluetooth, 13, 21, DARKMODE ? GxEPD_WHITE : GxEPD_BLACK);
-  }
 }
 
 void Watchy7SEG::drawTime() {
