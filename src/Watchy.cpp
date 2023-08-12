@@ -7,7 +7,6 @@ RTC_DATA_ATTR int guiState;
 RTC_DATA_ATTR int menuIndex;
 RTC_DATA_ATTR BMA423 sensor;
 RTC_DATA_ATTR bool WIFI_CONFIGURED;
-RTC_DATA_ATTR bool BLE_CONFIGURED;
 RTC_DATA_ATTR weatherData currentWeather;
 RTC_DATA_ATTR int weatherIntervalCounter = -1;
 RTC_DATA_ATTR bool displayFullInit = true;
@@ -33,11 +32,8 @@ void Watchy::init(String datetime) {
 		switch (guiState) {
 		case WATCHFACE_STATE:
 			showWatchFace(true); // partial updates on tick
-			if (settings.vibrateOClock) {
-				if (currentTime.Minute == 0) {
-					// The RTC wakes us up once per minute
-					vibMotor(75, 4);
-				}
+			if ((settings.vibrateOClock) && (currentTime.Minute == 0)) {
+				vibMotorPattern(currentTime.Hour % 12);
 			}
 			break;
 		case MAIN_MENU_STATE:
@@ -337,30 +333,38 @@ void Watchy::showAbout() {
 	time_t b = makeTime(bootTime);
 	time_t c = makeTime(currentTime);
 	int totalSeconds = c - b;
-	// int seconds = (totalSeconds % 60);
 	int minutes = (totalSeconds % 3600) / 60;
 	int hours = (totalSeconds % 86400) / 3600;
 	int days = (totalSeconds % (86400 * 30)) / 86400;
+
 	display.print(days);
 	display.print("d");
 	display.print(hours);
 	display.print("h");
 	display.print(minutes);
 	display.print("m");
+
 	display.display(false); // full refresh
 
 	guiState = APP_STATE;
 }
 
 void Watchy::showBuzz() {
+	uint8_t pattern = 9;
+
 	display.setFullWindow();
 	display.fillScreen(GxEPD_BLACK);
 	display.setFont(&FreeMonoBold9pt7b);
 	display.setTextColor(GxEPD_WHITE);
+
 	display.setCursor(70, 80);
 	display.println("Buzz!");
+	display.println(pattern);
+
 	display.display(false); // full refresh
-	vibMotor();
+
+	vibMotorPattern(pattern);
+
 	showMenu(menuIndex, false);
 }
 
@@ -372,6 +376,46 @@ void Watchy::vibMotor(uint8_t intervalMs, uint8_t length) {
 		digitalWrite(VIB_MOTOR_PIN, motorOn);
 		delay(intervalMs);
 	}
+}
+
+// vibMotorPattern vibrates the motor according to the given bit pattern. It starts at the
+// MSB that is not zero, then goes towards the LSB. If pattern is 0, the motor vibrates
+// only once.
+void Watchy::vibMotorPattern(uint8_t pattern) {
+	// Figure out length
+	uint8_t length = 0;
+
+	for (uint8_t p = pattern; p != 0; p >>= 1) {
+		length++;
+	}
+
+	if (pattern == 0) {
+		length = 1;
+	}
+
+	pinMode(VIB_MOTOR_PIN, OUTPUT);
+
+	for (; length > 0; length--) {
+		bool one = pattern & (1 << (length - 1));
+
+		digitalWrite(VIB_MOTOR_PIN, true);
+
+		if (one) {
+			delay(200);
+		} else {
+			delay(75);
+		}
+
+		digitalWrite(VIB_MOTOR_PIN, false);
+
+		if (length == 0) {
+			break;
+		}
+
+		delay(400);
+	}
+
+	pinMode(VIB_MOTOR_PIN, INPUT);
 }
 
 void Watchy::setTime() {

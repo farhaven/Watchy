@@ -53,6 +53,7 @@ class Watchy {
 	static void displayBusyCallback(const void *);
 	float getBatteryVoltage();
 	void vibMotor(uint8_t intervalMs = 100, uint8_t length = 20);
+	void vibMotorPattern(uint8_t pattern);
 
 	virtual void handleButtonPress();
 	void showMenu(byte menuIndex, bool partialRefresh);
@@ -72,8 +73,7 @@ class Watchy {
 	weatherData getWeatherData(String cityID, String units, String lang, String url, String apiKey, uint8_t updateInterval);
 
 	void showWatchFace(bool partialRefresh);
-	virtual void drawWatchFace(); // override this method for different watch
-	                              // faces
+	virtual void drawWatchFace(); // override this method for different watch faces
 
   private:
 	void _bmaConfig();
