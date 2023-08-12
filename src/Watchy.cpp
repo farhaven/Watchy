@@ -544,7 +544,6 @@ void Watchy::showAccelerometer() {
 	pinMode(BACK_BTN_PIN, INPUT);
 
 	while (1) {
-
 		unsigned long currentMillis = millis();
 
 		if (digitalRead(BACK_BTN_PIN) == 1) {

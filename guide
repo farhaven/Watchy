@@ -4,3 +4,7 @@ platformio project init --board esp32dev
 
 platformio run -t upload
 platformio run -t compiledb (then replace compile_commands.json with generated file)
+
+Continuous build:
+
+Watch -r pio run
