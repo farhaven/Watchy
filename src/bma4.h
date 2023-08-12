@@ -157,8 +157,7 @@ uint16_t bma4_write_config_file(struct bma4_dev *dev);
  *	@retval 0 -> Success
  *	@retval Any non zero value -> Fail
  */
-uint16_t bma4_write_regs(uint8_t addr, uint8_t *data, uint8_t len,
-                         struct bma4_dev *dev);
+uint16_t bma4_write_regs(uint8_t addr, uint8_t *data, uint8_t len, struct bma4_dev *dev);
 
 /*!
  *	@brief This API checks whether the read operation requested is for
@@ -173,8 +172,7 @@ uint16_t bma4_write_regs(uint8_t addr, uint8_t *data, uint8_t len,
  *	@retval 0 -> Success
  *	@retval Any non zero value -> Fail
  */
-uint16_t bma4_read_regs(uint8_t addr, uint8_t *data, uint8_t len,
-                        struct bma4_dev *dev);
+uint16_t bma4_read_regs(uint8_t addr, uint8_t *data, uint8_t len, struct bma4_dev *dev);
 
 /*!
  *	@brief This API reads the error status from the sensor.
@@ -294,8 +292,7 @@ uint16_t bma4_get_sensor_time(uint32_t *sensor_time, struct bma4_dev *dev);
  *	@retval Any non zero value -> Fail
  *
  */
-uint16_t bma4_get_temperature(int32_t *temp, uint8_t temp_unit,
-                              struct bma4_dev *dev);
+uint16_t bma4_get_temperature(int32_t *temp, uint8_t temp_unit, struct bma4_dev *dev);
 
 /*!
  *	@brief This API reads the Output data rate, Bandwidth, perf_mode
@@ -975,8 +972,7 @@ bma4_second_if_mag_compensate_xyz(struct bma4_mag_fifo_data mag_fifo_data,
  *	@retval Any non zero value -> Fail
  *
  */
-uint16_t bma4_read_mag_xyz(struct bma4_mag *mag, uint8_t sensor_select,
-                           struct bma4_dev *dev);
+uint16_t bma4_read_mag_xyz(struct bma4_mag *mag, uint8_t sensor_select, struct bma4_dev *dev);
 
 /*!
  *	@brief This API reads the auxiliary I2C interface configuration which
@@ -1137,7 +1133,8 @@ uint16_t bma4_get_offset_comp(uint8_t *offset_en, struct bma4_dev *dev);
  *
  */
 uint16_t bma4_extract_accel(struct bma4_accel *accel_data,
-                            uint16_t *accel_length, const struct bma4_dev *dev);
+                            uint16_t *accel_length,
+                            const struct bma4_dev *dev);
 
 /*!
  *	@brief This API parses and extracts the magnetometer frames from
@@ -1163,8 +1160,7 @@ uint16_t bma4_extract_accel(struct bma4_accel *accel_data,
  *	@retval Any non zero value -> Fail
  *
  */
-uint16_t bma4_extract_mag(struct bma4_mag *mag_data, uint16_t *mag_length,
-                          const struct bma4_dev *dev);
+uint16_t bma4_extract_mag(struct bma4_mag *mag_data, uint16_t *mag_length, const struct bma4_dev *dev);
 
 /*!
  *	@brief This API performs Fast Offset Compensation for Accel.
@@ -1247,8 +1243,7 @@ uint16_t bma4_selftest_config(uint8_t sign, struct bma4_dev *dev);
  *	@retval Any non zero value -> Fail
  *
  */
-uint16_t bma4_map_interrupt(uint8_t int_line, uint16_t int_map, uint8_t enable,
-                            struct bma4_dev *dev);
+uint16_t bma4_map_interrupt(uint8_t int_line, uint16_t int_map, uint8_t enable, struct bma4_dev *dev);
 
 /*!
  *	@brief This API sets the interrupt mode in the sensor.
@@ -1392,8 +1387,7 @@ uint16_t bma4_get_aux_mag_config(struct bma4_aux_mag_config *aux_mag,
  *	@retval Any non zero value -> Fail
  *
  */
-uint16_t bma4_set_fifo_config(uint8_t config, uint8_t enable,
-                              struct bma4_dev *dev);
+uint16_t bma4_set_fifo_config(uint8_t config, uint8_t enable, struct bma4_dev *dev);
 
 /*!	@brief This API reads the FIFO configuration from the sensor.
  *
@@ -1464,7 +1458,8 @@ uint16_t bma4_get_fifo_config(uint8_t *fifo_config, struct bma4_dev *dev);
  */
 uint16_t
 bma4_set_int_pin_config(const struct bma4_int_pin_config *int_pin_config,
-                        uint8_t int_line, struct bma4_dev *dev);
+                        uint8_t int_line,
+                        struct bma4_dev *dev);
 
 /*! @brief This API reads the electrical behavior of interrupt pin1 or pin2
  *  from the sensor.
@@ -1506,7 +1501,8 @@ bma4_set_int_pin_config(const struct bma4_int_pin_config *int_pin_config,
  *
  */
 uint16_t bma4_get_int_pin_config(struct bma4_int_pin_config *int_pin_config,
-                                 uint8_t int_line, struct bma4_dev *dev);
+                                 uint8_t int_line,
+                                 struct bma4_dev *dev);
 
 /*!
  *	@brief This API reads the Feature and Hardware interrupt status from the
@@ -1576,8 +1572,7 @@ uint16_t bma4_aux_interface_init(struct bma4_dev *dev);
  *	@retval Any non zero value -> Fail
  *
  */
-uint16_t bma4_aux_read(uint8_t aux_reg_addr, uint8_t *aux_data, uint16_t len,
-                       struct bma4_dev *dev);
+uint16_t bma4_aux_read(uint8_t aux_reg_addr, uint8_t *aux_data, uint16_t len, struct bma4_dev *dev);
 
 /*!
  *	@brief This API writes the data into the auxiliary sensor
@@ -1594,8 +1589,7 @@ uint16_t bma4_aux_read(uint8_t aux_reg_addr, uint8_t *aux_data, uint16_t len,
  *	@retval Any non zero value -> Fail
  *
  */
-uint16_t bma4_aux_write(uint8_t aux_reg_addr, uint8_t *aux_data, uint16_t len,
-                        struct bma4_dev *dev);
+uint16_t bma4_aux_write(uint8_t aux_reg_addr, uint8_t *aux_data, uint16_t len, struct bma4_dev *dev);
 
 #endif
 /* End of __BMA4_H__ */
