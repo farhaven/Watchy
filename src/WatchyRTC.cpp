@@ -74,10 +74,10 @@ void WatchyRTC::set(tmElements_t tm) {
 	time_t t = makeTime(tm); // make and break to calculate tm.Wday
 	breakTime(t, tm);
 
+	// TimeLib & DS3231 has Wday range of 1-7, but PCF8563 stores day of week in 0-6 range
 	// day, weekday, month, century(1=1900, 0=2000), year(0-99)
 	rtc_pcf.setDate(
-		tm.Day, tm.Wday - 1, tm.Month, 0,
-		tmYearToY2k(tm.Year)); // TimeLib & DS3231 has Wday range of 1-7, but PCF8563 stores day of week in 0-6 range
+		tm.Day, tm.Wday - 1, tm.Month, 0, tmYearToY2k(tm.Year));
 
 	// hr, min, sec
 	rtc_pcf.setTime(tm.Hour, tm.Minute, tm.Second);
@@ -111,26 +111,29 @@ void WatchyRTC::_DSConfig(String datetime) { // String datetime is YYYY:MM:DD:HH
 	rtc_ds.alarmInterrupt(DS3232RTC::ALARM_2, true);           // enable alarm interrupt
 }
 
-void WatchyRTC::_PCFConfig(String datetime) { // String datetime is YYYY:MM:DD:HH:MM:SS
-	if (datetime != "") {
-		tmElements_t tm;
-		tm.Year = CalendarYrToTm(_getValue(datetime, ':', 0).toInt()); // YYYY -
-		                                                               // 1970
-		tm.Month = _getValue(datetime, ':', 1).toInt();
-		tm.Day = _getValue(datetime, ':', 2).toInt();
-		tm.Hour = _getValue(datetime, ':', 3).toInt();
-		tm.Minute = _getValue(datetime, ':', 4).toInt();
-		tm.Second = _getValue(datetime, ':', 5).toInt();
-		time_t t = makeTime(tm); // make and break to calculate tm.Wday
-		breakTime(t, tm);
-		// day, weekday, month, century(1=1900, 0=2000), year(0-99)
-		rtc_pcf.setDate(
-			tm.Day, tm.Wday - 1, tm.Month, 0,
-			tmYearToY2k(tm.Year)); // TimeLib & DS3231 has Wday range of 1-7, but
-		                           // PCF8563 stores day of week in 0-6 range
-		// hr, min, sec
-		rtc_pcf.setTime(tm.Hour, tm.Minute, tm.Second);
+void WatchyRTC::_PCFConfig(String datetime) {
+	// String datetime is YYYY:MM:DD:HH:MM:SS
+	if (datetime == "") {
+		clearAlarm();
+		return;
 	}
+
+	tmElements_t tm;
+	tm.Year = CalendarYrToTm(_getValue(datetime, ':', 0).toInt()); // YYYY - 1970
+	tm.Month = _getValue(datetime, ':', 1).toInt();
+	tm.Day = _getValue(datetime, ':', 2).toInt();
+	tm.Hour = _getValue(datetime, ':', 3).toInt();
+	tm.Minute = _getValue(datetime, ':', 4).toInt();
+	tm.Second = _getValue(datetime, ':', 5).toInt();
+	time_t t = makeTime(tm); // make and break to calculate tm.Wday
+	breakTime(t, tm);
+
+	// TimeLib & DS3231 has Wday range of 1-7, but PCF8563 stores day of week in 0-6 range
+	// day, weekday, month, century(1=1900, 0=2000), year(0-99)
+	rtc_pcf.setDate(
+		tm.Day, tm.Wday - 1, tm.Month, 0, tmYearToY2k(tm.Year));
+	// hr, min, sec
+	rtc_pcf.setTime(tm.Hour, tm.Minute, tm.Second);
 
 	// on POR event, PCF8563 sets month to 0, which will give an error since
 	// months are 1-12

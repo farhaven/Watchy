@@ -22,8 +22,7 @@ void Watchy::init(String datetime) {
 
 	// Init the display here for all cases, if unused, it will do nothing
 	display.epd2.selectSPI(SPI, SPISettings(20000000, MSBFIRST, SPI_MODE0)); // Set SPI to 20Mhz (default is 4Mhz)
-	display.init(0, displayFullInit, 10,
-	             true); // 10ms by spec, and fast pulldown reset
+	display.init(0, displayFullInit, 10, true);                              // 10ms by spec, and fast pulldown reset
 	display.epd2.setBusyCallback(displayBusyCallback);
 
 	switch (wakeup_reason) {
@@ -71,22 +70,29 @@ void Watchy::displayBusyCallback(const void *) {
 
 void Watchy::deepSleep() {
 	display.hibernate();
-	if (displayFullInit) // For some reason, seems to be enabled on first boot
+	if (displayFullInit) {
+		// For some reason, seems to be enabled on first boot
 		esp_sleep_disable_wakeup_source(ESP_SLEEP_WAKEUP_ALL);
+	}
+
 	displayFullInit = false; // Notify not to init it again
 	RTC.clearAlarm();        // resets the alarm flag in the RTC
 
 	// Set GPIOs 0-39 to input to avoid power leaking out
 	const uint64_t ignore = 0b11110001000000110000100111000010; // Ignore some GPIOs due to resets
 	for (int i = 0; i < GPIO_NUM_MAX; i++) {
-		if ((ignore >> i) & 0b1)
+		if ((ignore >> i) & 0b1) {
 			continue;
+		}
 		pinMode(i, INPUT);
 	}
-	esp_sleep_enable_ext0_wakeup((gpio_num_t)RTC_INT_PIN,
-	                             0); // enable deep sleep wake on RTC interrupt
-	esp_sleep_enable_ext1_wakeup(BTN_PIN_MASK,
-	                             ESP_EXT1_WAKEUP_ANY_HIGH); // enable deep sleep wake on button press
+
+	// enable deep sleep wake on RTC interrupt
+	esp_sleep_enable_ext0_wakeup((gpio_num_t)RTC_INT_PIN, 0);
+
+	// enable deep sleep wake on button press
+	esp_sleep_enable_ext1_wakeup(BTN_PIN_MASK, ESP_EXT1_WAKEUP_ANY_HIGH);
+
 	esp_deep_sleep_start();
 }
 
@@ -94,9 +100,11 @@ void Watchy::handleButtonPress() {
 	uint64_t wakeupBit = esp_sleep_get_ext1_wakeup_status();
 	// Menu Button
 	if (wakeupBit & MENU_BTN_MASK) {
-		if (guiState == WATCHFACE_STATE) { // enter menu state if coming from watch face
+		if (guiState == WATCHFACE_STATE) {
+			// enter menu state if coming from watch face
 			showMenu(menuIndex, false);
-		} else if (guiState == MAIN_MENU_STATE) { // if already in menu, then select menu item
+		} else if (guiState == MAIN_MENU_STATE) {
+			// if already in menu, then select menu item
 			switch (menuIndex) {
 			case 0:
 				showAbout();
@@ -126,18 +134,21 @@ void Watchy::handleButtonPress() {
 	}
 	// Back Button
 	else if (wakeupBit & BACK_BTN_MASK) {
-		if (guiState == MAIN_MENU_STATE) { // exit to watch face if already in menu
+		if (guiState == MAIN_MENU_STATE) {
+			// exit to watch face if already in menu
 			RTC.read(currentTime);
 			showWatchFace(false);
 		} else if (guiState == APP_STATE) {
-			showMenu(menuIndex, false); // exit to menu if already in app
+			// exit to menu if already in app
+			showMenu(menuIndex, false);
 		} else if (guiState == WATCHFACE_STATE) {
 			return;
 		}
 	}
 	// Up Button
 	else if (wakeupBit & UP_BTN_MASK) {
-		if (guiState == MAIN_MENU_STATE) { // increment menu index
+		if (guiState == MAIN_MENU_STATE) {
+			// increment menu index
 			menuIndex--;
 			if (menuIndex < 0) {
 				menuIndex = MENU_LENGTH - 1;
@@ -149,7 +160,8 @@ void Watchy::handleButtonPress() {
 	}
 	// Down Button
 	else if (wakeupBit & DOWN_BTN_MASK) {
-		if (guiState == MAIN_MENU_STATE) { // decrement menu index
+		if (guiState == MAIN_MENU_STATE) {
+			// decrement menu index
 			menuIndex++;
 			if (menuIndex > MENU_LENGTH - 1) {
 				menuIndex = 0;
@@ -173,7 +185,8 @@ void Watchy::handleButtonPress() {
 		} else {
 			if (digitalRead(MENU_BTN_PIN) == 1) {
 				lastTimeout = millis();
-				if (guiState == MAIN_MENU_STATE) { // if already in menu, then select menu item
+				if (guiState == MAIN_MENU_STATE) {
+					// if already in menu, then select menu item
 					switch (menuIndex) {
 					case 0:
 						showAbout();
@@ -202,16 +215,19 @@ void Watchy::handleButtonPress() {
 				}
 			} else if (digitalRead(BACK_BTN_PIN) == 1) {
 				lastTimeout = millis();
-				if (guiState == MAIN_MENU_STATE) { // exit to watch face if already in menu
+				if (guiState == MAIN_MENU_STATE) {
+					// exit to watch face if already in menu
 					RTC.read(currentTime);
 					showWatchFace(false);
 					break; // leave loop
 				} else if (guiState == APP_STATE) {
-					showMenu(menuIndex, false); // exit to menu if already in app
+					// exit to menu if already in app
+					showMenu(menuIndex, false);
 				}
 			} else if (digitalRead(UP_BTN_PIN) == 1) {
 				lastTimeout = millis();
-				if (guiState == MAIN_MENU_STATE) { // increment menu index
+				if (guiState == MAIN_MENU_STATE) {
+					// increment menu index
 					menuIndex--;
 					if (menuIndex < 0) {
 						menuIndex = MENU_LENGTH - 1;
@@ -220,7 +236,8 @@ void Watchy::handleButtonPress() {
 				}
 			} else if (digitalRead(DOWN_BTN_PIN) == 1) {
 				lastTimeout = millis();
-				if (guiState == MAIN_MENU_STATE) { // decrement menu index
+				if (guiState == MAIN_MENU_STATE) {
+					// decrement menu index
 					menuIndex++;
 					if (menuIndex > MENU_LENGTH - 1) {
 						menuIndex = 0;
@@ -506,7 +523,8 @@ void Watchy::setTime() {
 		display.setFont(&DSEG7_Classic_Bold_53);
 
 		display.setCursor(5, 80);
-		if (setIndex == SET_HOUR) { // blink hour digits
+		if (setIndex == SET_HOUR) {
+			// blink hour digits
 			display.setTextColor(blink ? GxEPD_WHITE : GxEPD_BLACK);
 		}
 		if (hour < 10) {
@@ -518,7 +536,8 @@ void Watchy::setTime() {
 		display.print(":");
 
 		display.setCursor(108, 80);
-		if (setIndex == SET_MINUTE) { // blink minute digits
+		if (setIndex == SET_MINUTE) {
+			// blink minute digits
 			display.setTextColor(blink ? GxEPD_WHITE : GxEPD_BLACK);
 		}
 		if (minute < 10) {
@@ -530,7 +549,8 @@ void Watchy::setTime() {
 
 		display.setFont(&FreeMonoBold9pt7b);
 		display.setCursor(45, 150);
-		if (setIndex == SET_YEAR) { // blink minute digits
+		if (setIndex == SET_YEAR) {
+			// blink minute digits
 			display.setTextColor(blink ? GxEPD_WHITE : GxEPD_BLACK);
 		}
 		display.print(2000 + year);
@@ -538,7 +558,8 @@ void Watchy::setTime() {
 		display.setTextColor(GxEPD_WHITE);
 		display.print("/");
 
-		if (setIndex == SET_MONTH) { // blink minute digits
+		if (setIndex == SET_MONTH) {
+			// blink minute digits
 			display.setTextColor(blink ? GxEPD_WHITE : GxEPD_BLACK);
 		}
 		if (month < 10) {
@@ -549,7 +570,8 @@ void Watchy::setTime() {
 		display.setTextColor(GxEPD_WHITE);
 		display.print("/");
 
-		if (setIndex == SET_DAY) { // blink minute digits
+		if (setIndex == SET_DAY) {
+			// blink minute digits
 			display.setTextColor(blink ? GxEPD_WHITE : GxEPD_BLACK);
 		}
 		if (day < 10) {
@@ -594,50 +616,53 @@ void Watchy::showAccelerometer() {
 			break;
 		}
 
-		if (currentMillis - previousMillis > interval) {
-			previousMillis = currentMillis;
-			// Get acceleration data
-			bool res = sensor.getAccel(acc);
-			uint8_t direction = sensor.getDirection();
-			display.fillScreen(GxEPD_BLACK);
-			display.setCursor(0, 30);
-			if (res == false) {
-				display.println("getAccel FAIL");
-			} else {
-				display.print("  X:");
-				display.println(acc.x);
-				display.print("  Y:");
-				display.println(acc.y);
-				display.print("  Z:");
-				display.println(acc.z);
-
-				display.setCursor(30, 130);
-				switch (direction) {
-				case DIRECTION_DISP_DOWN:
-					display.println("FACE DOWN");
-					break;
-				case DIRECTION_DISP_UP:
-					display.println("FACE UP");
-					break;
-				case DIRECTION_BOTTOM_EDGE:
-					display.println("BOTTOM EDGE");
-					break;
-				case DIRECTION_TOP_EDGE:
-					display.println("TOP EDGE");
-					break;
-				case DIRECTION_RIGHT_EDGE:
-					display.println("RIGHT EDGE");
-					break;
-				case DIRECTION_LEFT_EDGE:
-					display.println("LEFT EDGE");
-					break;
-				default:
-					display.println("ERROR!!!");
-					break;
-				}
-			}
-			display.display(true); // full refresh
+		if (currentMillis - previousMillis <= interval) {
+			continue;
 		}
+
+		previousMillis = currentMillis;
+		// Get acceleration data
+		bool res = sensor.getAccel(acc);
+		uint8_t direction = sensor.getDirection();
+		display.fillScreen(GxEPD_BLACK);
+		display.setCursor(0, 30);
+		if (res == false) {
+			display.println("getAccel FAIL");
+		} else {
+			display.print("  X:");
+			display.println(acc.x);
+			display.print("  Y:");
+			display.println(acc.y);
+			display.print("  Z:");
+			display.println(acc.z);
+
+			display.setCursor(30, 130);
+			switch (direction) {
+			case DIRECTION_DISP_DOWN:
+				display.println("FACE DOWN");
+				break;
+			case DIRECTION_DISP_UP:
+				display.println("FACE UP");
+				break;
+			case DIRECTION_BOTTOM_EDGE:
+				display.println("BOTTOM EDGE");
+				break;
+			case DIRECTION_TOP_EDGE:
+				display.println("TOP EDGE");
+				break;
+			case DIRECTION_RIGHT_EDGE:
+				display.println("RIGHT EDGE");
+				break;
+			case DIRECTION_LEFT_EDGE:
+				display.println("LEFT EDGE");
+				break;
+			default:
+				display.println("ERROR!!!");
+				break;
+			}
+		}
+
+		display.display(true); // full refresh
 	}
 
 	showMenu(menuIndex, false);
@@ -666,16 +691,15 @@ void Watchy::drawWatchFace() {
 
 weatherData Watchy::getWeatherData() {
 	return getWeatherData(settings.cityID,
-	                      settings.weatherUnit,
 	                      settings.weatherLang,
 	                      settings.weatherURL,
 	                      settings.weatherAPIKey,
 	                      settings.weatherUpdateInterval);
 }
 
-weatherData Watchy::getWeatherData(String cityID, String units, String lang, String url, String apiKey, uint8_t updateInterval) {
-	currentWeather.isMetric = units == String("metric");
-	if (weatherIntervalCounter < 0) { //-1 on first run, set to updateInterval
+weatherData Watchy::getWeatherData(String cityID, String lang, String url, String apiKey, uint8_t updateInterval) {
+	if (weatherIntervalCounter < 0) {
+		//-1 on first run, set to updateInterval
 		weatherIntervalCounter = updateInterval;
 	}
 
@@ -690,12 +714,7 @@ weatherData Watchy::getWeatherData(String cityID, String units, String lang, Str
 
 	if (!connectWiFi()) {
 		// No WiFi, use internal temperature sensor
-		uint8_t temperature = sensor.readTemperature(); // celsius
-		if (!currentWeather.isMetric) {
-			temperature = temperature * 9. / 5. + 32.; // fahrenheit
-		}
-
-		currentWeather.temperature = temperature;
+		currentWeather.temperature = sensor.readTemperature();
 		currentWeather.weatherConditionCode = 800;
 		currentWeather.external = false;
 
@@ -704,7 +723,7 @@ weatherData Watchy::getWeatherData(String cityID, String units, String lang, Str
 
 	HTTPClient http;              // Use Weather API for live data if WiFi is connected
 	http.setConnectTimeout(3000); // 3 second max timeout
-	String weatherQueryURL = url + cityID + String("&units=") + units + String("&lang=") + lang + String("&appid=") + apiKey;
+	String weatherQueryURL = url + cityID + String("&units=metric&lang=") + lang + String("&appid=") + apiKey;
 	http.begin(weatherQueryURL.c_str());
 	int httpResponseCode = http.GET();
 	if (httpResponseCode == 200) {
@@ -730,11 +749,8 @@ weatherData Watchy::getWeatherData(String cityID, String units, String lang, Str
 }
 
 float Watchy::getBatteryVoltage() {
-	if (RTC.rtcType == DS3231) {
-		return analogReadMilliVolts(BATT_ADC_PIN) / 1000.0f * 2.0f; // Battery voltage goes through a 1/2 divider.
-	} else {
-		return analogReadMilliVolts(BATT_ADC_PIN) / 1000.0f * 2.0f;
-	}
+	// Battery voltage goes through a 1/2 divider.
+	return analogReadMilliVolts(BATT_ADC_PIN) / 1000.0f * 2.0f;
 }
 
 uint16_t Watchy::_readRegister(uint8_t address, uint8_t reg, uint8_t *data, uint16_t len) {
@@ -757,7 +773,6 @@ uint16_t Watchy::_writeRegister(uint8_t address, uint8_t reg, uint8_t *data, uin
 }
 
 void Watchy::_bmaConfig() {
-
 	if (sensor.begin(_readRegister, _writeRegister, delay) == false) {
 		// fail to init BMA
 		return;
@@ -822,6 +837,7 @@ void Watchy::_bmaConfig() {
 	config.od = BMA4_PUSH_PULL;
 	config.output_en = BMA4_OUTPUT_ENABLE;
 	config.input_en = BMA4_INPUT_DISABLE;
+
 	// The correct trigger interrupt needs to be configured as needed
 	sensor.setINTPinConfig(config, BMA4_INTR1_MAP);
 
@@ -858,6 +874,7 @@ void Watchy::setupWifi() {
 	wifiManager.resetSettings();
 	wifiManager.setTimeout(WIFI_AP_TIMEOUT);
 	wifiManager.setAPCallback(_configModeCallback);
+
 	display.setFullWindow();
 	display.fillScreen(GxEPD_BLACK);
 	display.setFont(&FreeMonoBold9pt7b);
@@ -873,11 +890,11 @@ void Watchy::setupWifi() {
 		weatherIntervalCounter = -1; // Reset to force weather to be read again
 	}
 	display.display(false); // full refresh
+
 	// turn off radios
 	WiFi.mode(WIFI_OFF);
 	btStop();
-	display.epd2.setBusyCallback(displayBusyCallback); // enable lightsleep on
-	                                                   // busy
+	display.epd2.setBusyCallback(displayBusyCallback); // enable lightsleep on busy
 	guiState = APP_STATE;
 }
 
@@ -898,19 +915,19 @@ void Watchy::_configModeCallback(WiFiManager *myWiFiManager) {
 }
 
 bool Watchy::connectWiFi() {
-	if (WL_CONNECT_FAILED == WiFi.begin()) { // WiFi not setup, you can also use hard coded credentials
-		                                     // with WiFi.begin(SSID,PASS);
+	if (WL_CONNECT_FAILED == WiFi.begin()) {
+		// WiFi not setup, you can also use hard coded credentials with WiFi.begin(SSID,PASS);
 		WIFI_CONFIGURED = false;
-	} else {
-		if (WL_CONNECTED == WiFi.waitForConnectResult()) { // attempt to connect for 10s
-			WIFI_CONFIGURED = true;
-		} else { // connection failed, time out
-			WIFI_CONFIGURED = false;
-			// turn off radios
-			WiFi.mode(WIFI_OFF);
-			btStop();
-		}
+	} else if (WL_CONNECTED == WiFi.waitForConnectResult()) {
+		// attempt to connect for 10s
+		WIFI_CONFIGURED = true;
+	} else { // connection failed, time out
+		WIFI_CONFIGURED = false;
+		// turn off radios
+		WiFi.mode(WIFI_OFF);
+		btStop();
 	}
+
 	return WIFI_CONFIGURED;
 }
 
@@ -1010,12 +1027,14 @@ void Watchy::showSyncNTP() {
 	showMenu(menuIndex, false);
 }
 
-bool Watchy::syncNTP() { // NTP sync - call after connecting to WiFi and
-	                     // remember to turn it back off
+bool Watchy::syncNTP() {
+	// NTP sync - call after connecting to WiFi and remember to turn it back off
 	return syncNTP(gmtOffset, settings.ntpServer.c_str());
 }
 
-bool Watchy::syncNTP(long gmt) { return syncNTP(gmt, settings.ntpServer.c_str()); }
+bool Watchy::syncNTP(long gmt) {
+	return syncNTP(gmt, settings.ntpServer.c_str());
+}
 
 bool Watchy::syncNTP(long gmt, String ntpServer) {
 	// NTP sync - call after connecting to
@@ -1026,6 +1045,7 @@ bool Watchy::syncNTP(long gmt, String ntpServer) {
 	if (!timeClient.forceUpdate()) {
 		return false; // NTP sync failed
 	}
+
 	tmElements_t tm;
 	breakTime((time_t)timeClient.getEpochTime(), tm);
 	RTC.set(tm);

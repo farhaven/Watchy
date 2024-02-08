@@ -29,13 +29,12 @@ typedef struct watchySettings {
 	String cityID;
 	String weatherAPIKey;
 	String weatherURL;
-	String weatherUnit;
 	String weatherLang;
 	int8_t weatherUpdateInterval;
 	// NTP Settings
 	String ntpServer;
 	int gmtOffset;
-	//
+
 	bool vibrateOClock;
 } watchySettings;
 
@@ -70,7 +69,7 @@ class Watchy {
 	void setupWifi();
 	bool connectWiFi();
 	weatherData getWeatherData();
-	weatherData getWeatherData(String cityID, String units, String lang, String url, String apiKey, uint8_t updateInterval);
+	weatherData getWeatherData(String cityID, String lang, String url, String apiKey, uint8_t updateInterval);
 
 	void showWatchFace(bool partialRefresh);
 	virtual void drawWatchFace(); // override this method for different watch faces

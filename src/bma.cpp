@@ -20,9 +20,7 @@ bool BMA423::begin(bma4_com_fptr_t readCallBlack,
                    bma4_com_fptr_t writeCallBlack,
                    bma4_delay_fptr_t delayCallBlack,
                    uint8_t address) {
-
-	if (__init || readCallBlack == nullptr || writeCallBlack == nullptr ||
-	    delayCallBlack == nullptr) {
+	if (__init || readCallBlack == nullptr || writeCallBlack == nullptr || delayCallBlack == nullptr) {
 		return true;
 	}
 
@@ -66,6 +64,7 @@ bool BMA423::begin(bma4_com_fptr_t readCallBlack,
 		DEBUG("BMA423 SET INT FAIL\n");
 		return false;
 	}
+
 	return true;
 }
 
@@ -171,8 +170,7 @@ bool BMA423::getAccelEnable() {
 bool BMA423::disableAccel() { return enableAccel(false); }
 
 bool BMA423::enableAccel(bool en) {
-	return (BMA4_OK ==
-	        bma4_set_accel_enable(en ? BMA4_ENABLE : BMA4_DISABLE, &__devFptr));
+	return (BMA4_OK == bma4_set_accel_enable(en ? BMA4_ENABLE : BMA4_DISABLE, &__devFptr));
 }
 
 bool BMA423::setAccelConfig(Acfg &cfg) {
