@@ -1,5 +1,7 @@
 https://watchy.sqfmi.com/docs/getting-started#platformio-setup
 
+pipx install platformio
+
 platformio project init --board esp32dev
 
 platformio run -t upload
